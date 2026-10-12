@@ -1,0 +1,42 @@
+name: Importar catálogo completo Agency Agents
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/import-agency-agents.yml'
+permissions:
+  contents: write
+jobs:
+  importar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do Braço Direito
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Copiar fonte pública original
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/msitarzewski/agency-agents.git /tmp/agency-agents
+          SOURCE_SHA=$(git -C /tmp/agency-agents rev-parse HEAD)
+          mkdir -p vendor
+          rm -rf vendor/agency-agents
+          mkdir -p vendor/agency-agents
+          cp -a /tmp/agency-agents/. vendor/agency-agents/
+          rm -rf vendor/agency-agents/.git
+          printf '%s\n' "$SOURCE_SHA" > vendor/agency-agents/SOURCE_COMMIT.txt
+          test -f vendor/agency-agents/LICENSE
+          test -f vendor/agency-agents/README.md
+          echo "Commit original: $SOURCE_SHA"
+      - name: Registrar importação no GitHub
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add vendor/agency-agents
+          if git diff --cached --quiet; then
+            echo 'Catálogo já está atualizado.'
+          else
+            git commit -m 'chore: importar catálogo completo do Agency Agents (MIT)'
+            git push
+          fi
