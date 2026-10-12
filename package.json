@@ -1,0 +1,13 @@
+{
+  "name": "braco-direito-assistente",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Aplicação independente de testes do Braço Direito Assistente",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
